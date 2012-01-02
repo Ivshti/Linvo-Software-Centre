@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<html>
+<head>
+<title>LinvoApp software center</title>
+<style type="text/css" > <!-- @import url("stylesheet.css"); --> </style>
+
+<script type="text/javascript" src="js/jquery-1.6.2.min.js"></script><!-- TODO: replace with newer -->
+<script type="text/javascript" src="js/jquery.color.js"></script>
+<script type="text/javascript" src="js/jquery-glowing.js"></script>
+<script type="text/javascript" src="js/jquery-create-element.js"></script>
+<script type="text/javascript" src="js/jquery.text-overflow.js"></script>
+<script type="text/javascript" src="js/jquery.cookie.js"></script>
+<script type="text/javascript" src="jquery-simpleweld.js"></script>
+
+<script type="text/javascript" src="./fancybox/jquery.fancybox-1.3.4.js"></script>
+<link rel="stylesheet" type="text/css" href="./fancybox/jquery.fancybox-1.3.4.css" media="screen" />
+
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
+<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+
+<script type="text/javascript" src="/linvoapp-server/categories.js"></script>
+<script type="text/javascript" src="default-text.js"></script>
+<script type="text/javascript">
+	server="/linvoapp-server/";
+</script>
+<!--<script type="text/javascript" src="server-xml.js"></script>-->
+<script type="text/javascript" src="server-jsonp.js"></script>
+<script type="text/javascript" src="server-common.js"></script>
+<script type="text/javascript" src="server-auth.js"></script>
+<script type="text/javascript" src="software-center.js"></script>
+</head>
+
+<body>
+	<div style="display: none;" id="back-button" ><img src="icons/back.png" height=48 width=48></img></div>
+	<div style="float: right; position: fixed; right: 10px; top: 0px;">
+		<a id="login-link" href="#login-form">
+			<button id="login-button" class="hide-on-login">Log-in</button>
+		</a>
+		<button id="profile-button" class="show-on-login" onclick="ShowProfile();">My profile</button>
+	</div>
+	<div id="top-bar">
+		<div class="filter-button bar-button show-on-login" id="installed-button">Installed</div>
+		<div class="filter-button bar-button show-on-login" id="upgrades-button">Upgrades</div>
+		<div class="bar-button show-on-login" id="installations-button">View my installations <div class="InstallationsCount"></div></div>
+		
+		<div id="search-bar">
+			<input class="defaultText"  title="Search here" type="text"></input>
+			<div id="magnify"></div>
+			<div id="search-bar-reset"></div>
+		</div>
+	</div>
+	<div id="installations-box" class="empty-on-login hide-on-logout"></div>
+	<div id="search-results"></div>
+	
+	<div id="categories">
+	</div>
+	
+	<div id="other-apps">
+			<div id="most-used"><h1>Most used apps:</h1></div>
+			<div id="newest"><h1>Newest apps:</h1></div>
+	</div>
+	
+	<div id="applications" class="empty-on-login"></div>
+	<div id="ajax-loader-apps"></div>
+
+	<div id="notice-text"></div>
+	
+	<div id="login-box">
+		<div id="login-form">
+			<div id="login-text" style="width: 100%; margin-left: auto; margin-right: auto; text-align: center;"><h2>Login</h2></div>
+			<form>
+				<label for="username">Username:</label>
+				<input type="text" name="username" id="username"  value=""/>
+
+				<label for="password">Password:</label>
+				<input type="password" id="password" name="password"  /><br/>
+				<a href="../ucp.php?mode=sendpassword">I forgot my password</a><br/>
+	 
+				<label for="autologin"><input type="checkbox" name="autologin" id="autologin"> Log me on automatically each visit</label><br/>
+				<label for="viewonline"><input type="checkbox" name="viewonline" id="viewonline"> Hide my online status this session</label>
+			</form>
+			<div id="login-buttons">
+				<div style="float: left;"><button id="login-submit" data-link="../ucp.php?mode=login">Log-in</button></div>
+				<div style="float: right;"><button id="cancel-button">Cancel</button></div>
+			</div>
+			<div id="login-status"></div>
+		</div>
+	</div>
+
+	<div id="server-error" style="display: none;">
+		<div style="text-align: center;">
+			<div style="-moz-transform: rotate(90deg); -o-transform: rotate(90deg); -webkit-transform: rotate(90deg); transform: rotate(90deg);"><h1 style="font-size:450%">:&lt;</h1></div>
+			<br/><h2>Sad server is... sad</h2>
+			<br/><br/>
+			<p align="justify" style="margin-left: 5%; margin-right:5%;">The server encountered an error. Please come back later or report this to ivo@linvo.org if it keeps going on.</p>
+		</div>
+	</div>
+	
+	<div style="display: none;">		
+		<div id="profile-box">
+			<div id="logout-button" data-link="../ucp.php?mode=logout"><button>Log-out</button></div>
+			<div style="float:right;"><button id="settings-button">Settings</button></div>
+			<h1 style='display: inline-block;'>My profile</h1>
+			<h3 id="UserName"></h3>
+			<br/>
+			<h2>My Installations <div class="InstallationsCount"></div></h2>
+			<div id="Installations"></div>
+		</div>
+		<a href="#profile-box" id="profile-box-link"></a>
+		
+		<!-- Start templates -->
+		<div class="application" id="application-template">
+			<div class="app-actions">
+				<a class="ActionDownload Action"><img width="20" height="20" src="icons/download.png"></img></a>
+				<a class="ActionAdd Action"><img width="25" height="20" src="icons/add.png"></img></a>
+				<a class="ActionRemove Action"><img width="25" height="20" src="icons/remove.png"></img></a>
+				<a class="ActionUpgrade Action"><img width="25" height="20" src="icons/upgrade.png"></img></a>
+			</div>
+			<h1 class="Name" style="display:inline-block; margin-right: 10px;"></h1>
+			<h3 class="Version" style="display:inline-block"></h3>
+			<p align="justify" class="Description"></p>
+			<h3 class="InstalledVersion"></h3>
+		</div>
+		
+		<div class="installation-full" id="installation-full-template" title="hypothetical-tablet">
+			<div class="switch-installation">Manage this installation</div>
+			<img align="left" style="margin: 20px;"></img>
+			<p class="Description" align="justify"></p>
+			<div class="OSRelease"></div>
+			<div class="InstalledApps"></div>
+			<div class="Type"></div>
+			<div class="UpgradesCount"></div>
+		</div>
+		
+		<div class="installation" id="installation-template">
+			<a style="display: block;">
+				<img align="left" style="margin-right: 10px;">
+				<p class="Description"></p>
+			</a>
+		</div>
+	</div>
+</body>
+</html>
