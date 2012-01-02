@@ -1,39 +1,42 @@
 /* 
- * Version: 1.5.0
+ * Version: 1.6.0
  * 
  * #> packaging: remove all the external javascript scripts from the folder, but add them on building (Makefile?); split the style into a "linvo-webapp-styles" package
  * #> re-factor and split code
  * #> on the CSS file, remove prefixed entries and use a prefix remover
  * #> on search, dynamically show/remove apps instead of reloading the whole thing
  * #> implement in LinvoAppServer.js > a timeout on every request after which a global ajax loader will be shown; + error page on server error
- * > GUI re-design
+ * #> GUI re-design
+ * #> login form to redirect to registration page
+ * #> finish the full installation view, installation switching from there
  * > ratings: http://colorpowered.com/colorrating/
- * > (!one more bug: when returning from filter searching, it must return to filter)
  * > a box to register an installation, infers type if it finds a word ("laptop", "tablet", "netbook") in the description/name
- * > login form to redirect to registration page
  * > there is still a bug with going back..if on second (or more) page, animations aren't proper; must scroll page to top before beginning second animation
- * > finish the full installation view, installation switching from there
  * > tooltips when cursor is on action icons
  * > translations
  * > apple-like toggles
  * > wait for disqus to load fully before doing a reset
- * > configuration (e.g. "show top rated", "show most used")
  * 
  * 2.0:
  * > built-in integration with GNOME shell extensions and maybe android store if I can integrate android virtual machine into Linvo; possibly include {gtk,qt}-apps, but instead of packaging all those apps, add a "Request" button; this concept shall be called "sources"
  * > "users also viewed/installed"/similar
  * > social network integration, "send to" button
- * > 100% mobile version with http://jquerymobile.com/
+ * > proper mobile version (maybe with http://jquerymobile.com/) shipped as an app
  * > "Statistics" page
+ * > "Open" and "Delete settings" buttons
+ * > new full app view
  * > alternativeto integration?!
  * > remote desktop/control (puppet)
  * > on filtering/searching, if some apps are faded out, smoothly bring the others in their place / fancy tile effects
+ * > 3D interface similar to HTC sense, ability to change views while on "applications" (4 column option if the screen is large enough)
  * > remove all the log-in stuff specific to PHPBB, move to server
  * > dynamic category reloading (using a sidebar)
  * > search "website" in the global Linvo changelog and see what I can adapt from there
  * > an ability for every app to have a custom tile, defined by a template from a server key
  * > optimizations: use a faster binding-to-DOM method, maybe use weld.js; or server-side templating, and maybe template-based truncating of descriptions (or anything that's faster);  a good idea would be to append elements in the time between the issuing of a server request and the response (use a counter incremented aftr element binding and after request response, if ==2, do simpleweld)
  * > as soon as the software center is opened, start preloading (using OnIdle? ) the first pages of all categories
+ * > it might come in handy if all px values in the stylesheet are changed to cm values (automatically using a script)
+ * > different kind of "syncers": e.g. classic lnvsync://, D-Bus syncing (if the app is authorized and used locally), Ubuntu syncing (APT); that would also require some additional server keys for every app (e.g. UbuntuPackages); also, Windows syncing would be great
  * NOTE: use underscore if needed
  */
 
@@ -43,22 +46,31 @@
  * 
  * 
  */
+
+/* Constants */
 apps_per_page = 8;
 disqus_shortname = "linvo";
 max_search_query = 100;
+
+/* Server configuration */
 linvoapp_server = new LinvoAppServer("/linvoapp-server");
 linvoapp_server.baseParameters.AuthKey = $.cookie("AuthKey");
 
+/* Filter configuration */
 filters = 
 {
 	installed : { filter_class: "Installed", add_class: function(app) { return app.Installed==1; }, server_query: { Installed: 1 }},
 	upgrades : { filter_class: "Upgradable", add_class: function(app) { return app.Upgradable==1; },server_query: { Upgradable: 1 }}
 }; 
  
+ /* Variables */
 var request; /* Used for keeping track of current AJAX requests (and timeouts possibly) */
 var filter_rule; /* A reference to a jQuery object that describes a CSS rule to use when filtering */
+var scrollState = 0; /* Saves the scroll state in case we want to return back from a filter conveniently */
 var searchCache = new Object(); /* an object used to cache DOM elements created during search */
 var search_lastapps = [], search_applist;
+var RefreshCentreCallbacks = [];
+var userData;
 
 /* Define the error callback */
 linvoapp_server.errorCallback = function(jqXHR, textStatus)
@@ -81,7 +93,7 @@ function ShowAppByID(id)
 	linvoapp_server.List({ID: id},function(data)
 	{
 		$.fancybox(
-			GetAppElement(data.Application).append($(disqus_thread).detach()).html(),
+			GetAppElement(data.Application).removeClass("application").addClass("application-large")[0].outerHTML+$(disqus_thread).detach().html(),
 			{
 				"autoDimensions"	: false,
 				"width"         		: 800,
@@ -115,9 +127,11 @@ function TruncateAppDesc(elem)
  * 
  * */
  
-function GetAppElement(app)
+function GetAppElement(app, template_used)
 {
-	var app_element = $("#templates").find(".application").clone().simpleweld(app,{"id":"data-id"});
+	var app_element = $("#templates").find(template_used ? template_used : ".application")
+		.clone()
+		.simpleweld(app,{"id":"data-id"});
 
 	/* Add classes that later help the filters */
 	$.each(filters, function(name,filter)
@@ -140,11 +154,14 @@ function GetAppElement(app)
  * or the search bar
  * 
  */
+var updatefilters_req;
 function UpdateFilters()
 {
+	if (updatefilters_req) updatefilters_req.abort();
+	
 	$.each(filters, function(key,filter)
 	{
-		linvoapp_server.List(
+		updatefilters_req = linvoapp_server.List(
 			$.extend({PlainCount: true},filter.server_query),
 			function(count)
 			{ 
@@ -154,17 +171,8 @@ function UpdateFilters()
 			})
 		.Apply();
 	});
-}
+}	
 
-function IncrementFilter(filter, number)
-{
-	filter = $(filter);
-	var filterCountElem = filter.find(".count");
-	var count = parseInt(filterCountElem.text())+number;
-	filterCountElem.text(count);
-	filter.setActive(!(count == 0));
-};
-		
 function UndoFilters()
 {
 	filter_rule.text(""); /* Remove the css rule that filters apps */
@@ -177,10 +185,21 @@ function UndoFilters()
 	});
 }
 
+/* Add an .IncrementFilter subroutine to every member of filters; change the filter count without re-polling the server ; used on install/remove/upgrade actions */
+$.each(filters, function(key, filter)
+{
+	filter.IncrementFilter = function(number)
+	{
+		var filterElem = $("#"+key+"-button");
+		var filterCountElem = filterElem.find(".count");
+		var count = parseInt(filterCountElem.text())+number;
+		filterCountElem.text(count);
+		filterElem.setActive(!(count == 0));
+	};
+});	
+
 /* Search bar related functions
- * 
- *  
- * 
+ * just a utility to reset the serach bar
  **/
 function SearchBarReset()
 {	
@@ -191,12 +210,10 @@ function SearchBarReset()
 /* 
  * Switch between the 2 views: applications and main
  * 
- * 
- * 
  * */
 function SwitchToAppView()
 {		
-	$("#categories").stop(true, true).hide("slow","swing",null);
+	$("#home-page").stop(true, true).hide("slow","swing",null);
 	$("#back-button").stop(true, true).fadeIn("slow");
 }
 
@@ -204,7 +221,7 @@ function SwitchToMainView()
 {
 	if (request) request.abort();
 
-	$("#categories").stop(true, true).show("slow","swing"); /* handler func: undo the filter buttons' operation */
+	$("#home-page").stop(true, true).show("slow","swing"); /* handler func: undo the filter buttons' operation */
 	$("#back-button").stop(true, true).fadeOut("slow");
 	
 	$(".applications-list").hide();
@@ -229,10 +246,11 @@ function SwitchToMainView()
 function RefreshCentre()
 {
 	linvoapp_server.StopAll(); /* Make sure all requests are stopped */
-	
 	$(".applications-list:not(.searched-apps)").remove(); /* Clean all the application pages, except the one for searches, it stays forever */
 
-	$.fancybox.close();
+	if (!(arguments[0] && arguments[0].skipCloseFancybox))
+		$.fancybox.close();
+	
 	SwitchToMainView();
 	
 	/* Load categories */
@@ -249,12 +267,10 @@ function RefreshCentre()
 		});
 	}).Apply();
 	
-	/* Add top rated and newest 
-	 * Newest: "List","SortBy=DateCreated","Order=Descending","Limit=3"
-	 * must: $("#newest, #most-used, #top-rated").empty()
-	 * */
+	/* This allows us to write plug-ins for the software center more easily */
+	$.each(RefreshCentreCallbacks, function() { this() });
 
-	/* Reload user info
+	/* (Re)load user info
 	 * */
 	if (arguments[0] && arguments[0].skipUserReload)
 		return;
@@ -263,6 +279,7 @@ function RefreshCentre()
 	{
 		if (data.ID)
 		{
+			userData = data;
 			LoadInstallations();
 			$("#profile-box").simpleweld(data);
 			
@@ -292,7 +309,7 @@ $(document).ready(function()
 		LoadApps($(this).find(".Name").text(),0);
 	});
 	 	
-	$("button, input:submit").button(); //style all the buttons and submit inputs using jquery UI
+	$("button, input:submit, .button").button(); //style all the buttons and submit inputs using jquery UI
 	$(".fancyboxed").fancybox();
 	
 	/* Load disqus 
@@ -312,39 +329,92 @@ $(document).ready(function()
 	});
 
 	/* Actions */
+	function SelectApp(clicked_on)
+	{
+		var app = $(clicked_on).closest(".application, .application-large");
+		return app.add($(".application[data-id='"+app.data("id")+"']"));
+	}
+	
 	$(".ActionAdd").live("click",function()
 	{
-		var app = $(this).closest(".application");
+		var app = SelectApp(this);
 		
-		app.addClass("Installed");
-		IncrementFilter("#installed-button", 1);
+		app.addClass(filters.installed.filter_class);
+		filters.installed.IncrementFilter(1);
 		
-		linvoapp_server.Add({ID: app.data("id")}).Apply();
+		if (!userData.ID)
+			return;
+			
+		linvoapp_server.Add({ID: app.data("id")},SyncLocal).Apply();
 	});
 
 	$(".ActionRemove").live("click",function()
 	{
-		var app = $(this).closest(".application");
+		var app = SelectApp(this);
 		
-		IncrementFilter("#installed-button", -1);
-		if (app.hasClass("Upgradable")) /* Also decrement the "Upgrades" button if it was in upgrades */
-			IncrementFilter("#upgrades-button", -1);
-		app.removeClass("Installed").removeClass("Upgradable");
+		filters.installed.IncrementFilter(-1);
+		if (app.hasClass(filters.upgrades.filter_class)) /* Also decrement the "Upgrades" button if it was in upgrades */
+			filters.upgrades.IncrementFilter(-1);
 		
-		linvoapp_server.Remove({ID: app.data("id")}).Apply();
+		app.removeClass(filters.installed.filter_class).removeClass(filters.upgrades.filter_class);
+		
+		if (!userData.ID)
+			return;
+			
+		linvoapp_server.Remove({ID: app.data("id")},SyncLocal).Apply();
 	});
 	
 	$(".ActionUpgrade").live("click",function()
 	{
-		var app = $(this).closest(".application");
-
-		app.removeClass("Upgradable");
-		IncrementFilter("#upgrades-button", -1);
+		var app = SelectApp(this);
 		
+		app.removeClass(filters.upgrades.filter_class);
+		filters.upgrades.IncrementFilter(-1);
+		
+		if (!userData.ID)
+			return;
+			
 		linvoapp_server
 			.Remove({ID: app.find(".Name").text()+" "+app.find(".InstalledVersion").text()})
-			.Add({ID: app.data("id")})
+			.Add({ID: app.data("id")},SyncLocal)
 			.Apply();
+	});
+	
+	$("#upgrade-all").click(function(e)
+	{
+		e.stopPropagation(); /* Don't react to filter button click event */
+		
+		var upgradeall_req;
+		if (upgradeall_req && !upgradeall_req.LinvoAppServer.chainEnded)
+			return;
+			
+		linvoapp_server.List($.extend({Keys: ["InstalledVersion", "ID"], StartWith: null},filters.upgrades.server_query),function(data)
+		{
+			/* Chain the requests, in pairs of remove/add, so that if the connection fails 
+			* mid-request, you won't have all your apps removed and none added */
+			var upgradeall_chain = linvoapp_server;
+			
+			linvoapp_server.each(data.Application, function(index,app)
+			{				
+				var appID = app["@attributes"].id;
+				
+				upgradeall_chain = upgradeall_chain
+					.Remove({ID: app.Name+" "+app.InstalledVersion})
+					.Add({ID: appID}, function() 
+					{ 
+						/* If the add call succeeds, reflect it in the interface */
+						var upgradedAppElem = $(".application[data-id='"+appID+"']");
+						if (upgradedAppElem.length == 0)
+							return;
+							
+						upgradedAppElem.removeClass(filters.upgrades.filter_class); 
+						filters.upgrades.IncrementFilter(-1);
+					});
+			});
+			
+			/* Issue a meaningless List request after everything, so that we can add a SyncLocal callback */
+			upgradeall_req = upgradeall_chain.List({Limit: 1},SyncLocal).Apply();
+		}).Apply();
 	});
 				
 	/* Search bar 
@@ -357,13 +427,19 @@ $(document).ready(function()
 		search_lastapps = [];
 		search_applist.hide();
 		
-		if (linvoapp_server.baseParameters.Category)
+		var browsed_filters = $(".filter-button").hasClass("clicked");
+		if (linvoapp_server.baseParameters.Category || browsed_filters)
 		{
 			SearchBarReset();
 			
-			/* been to a category page before searching; in which case display all the loaded pages that were shown (meaning all until LoadAppsByCategory.page) */
-			$("div[id^='"+linvoapp_server.baseParameters.Category+"']").not(".searched-apps").slice(0,LoadAppsByCategory.page).show(); 
+			if (browsed_filters) /* been to a filter before searching; in which case display all the loaded pages marked with ".filter-added" */
+				$(".applications-list").hide().parent().find(".filter-added").show();
+			else /* been to a category page before searching; in which case display all the loaded pages that were shown (meaning all until LoadAppsByCategory.page) */
+				$("div[id^='"+linvoapp_server.baseParameters.Category+"']").not(".searched-apps").slice(0,LoadAppsByCategory.page).show(); 
+			
 			LoadAppsResetSearch();
+			UpdateFilters();
+			SearchBarReset();
 		}
 		else
 			SwitchToMainView(); /* been to main view before */
@@ -388,14 +464,14 @@ $(document).ready(function()
 	
 	/* Filter magic 
 	 * */
-	$(".filter-button").click(function() 
-	{  	
+	$(".filter-button").click(function(e) 
+	{  		
 		var name = $(this).attr("id").split("-")[0];
 		
 		/* if we were in an applications page, browsing a category; ToggleMainSections.at won't work because we need to know if a category is loaded */
 		var already_browsing_apps = linvoapp_server.baseParameters.Category || linvoapp_server.baseParameters.SearchBy;
 		
-		var was_clicked =  $(this).hasClass("clicked");
+		var was_clicked = $(this).hasClass("clicked");
 		$(this).toggleClass("clicked"); /* Must toggle that now because we may need that information later */
 		
 		if (was_clicked)
@@ -404,7 +480,12 @@ $(document).ready(function()
 			LoadAppsResetFilter();
 			
 			if (already_browsing_apps)
+			{
 				UndoFilters();
+				
+				window.scroll(0, scrollState);
+				scrollState = 0;
+			}
 			else
 				SwitchToMainView();
 		}
@@ -416,7 +497,10 @@ $(document).ready(function()
 			
 			if (!already_browsing_apps)
 				SwitchToAppView();
-				
+			
+			if (!scrollState)
+				scrollState = $(window).scrollTop(); /* Save that for convenient return to a un-filtered page */
+			
 			filter_rule.text(".application:not(."+filters[name].filter_class+") {display: none;}"); /* Set a rule to apply to shown apps */	
 			LoadApps(name); /* Load more apps, filtered */
 		}
@@ -434,8 +518,7 @@ $(document).ready(function()
 
 $(window).scroll(function()
 {
-	if  ($(window).scrollTop() == $(document).height() - $(window).height())
-	{
+	if  ($(window).scrollTop() > ($(document).height() - $(window).height())*0.75 
+			&& !(nextPageReq && !nextPageReq.LinvoAppServer.chainEnded))
 		LoadApps();
-	}
 });

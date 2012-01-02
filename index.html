@@ -1,27 +1,32 @@
 <!DOCTYPE html>
 <html>
-
-<html>
 <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+
 	<title>Linvo Applications</title>
-	<link rel="stylesheet" href="stylesheet.css" /> 
+	<link rel="stylesheet" href="stylesheet.css" />
+	<link rel="stylesheet" href="application.css" />  
 	<link rel="stylesheet" href="actions.css" /> 
 	<link rel="stylesheet" href="installations.css" /> 
+	<link rel="stylesheet" href="hotpicks.css" /> 
 
-	<script src="js-thirdparty/prefixfree.min.js"> <!-- Fix the prefixes on the stylesheet --></script>
+	<!-- Fix the prefixes on the stylesheet -->
+	<script src="js-thirdparty/prefixfree.min.js"></script>
 
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 	<script type="text/javascript" src="js-thirdparty/jquery-create-element.js"></script>
 	<script type="text/javascript" src="js-thirdparty/jquery.cookie.js"></script>
 	<!--<script type="text/javascript" src="js-thirdparty/jquery.livequery.js"></script>-->
-
+	<script src="js-thirdparty/jquery.mousewheel.js"></script>
+	<script src="js-thirdparty/cloud-carousel.1.0.5.js"></script>
+	
 	<script type="text/javascript" src="js/jquery-simpleweld.js"></script>
 	<script type="text/javascript" src="js/setActive.js"></script>
 	<script type="text/javascript" src="js/default-text.js"></script>
 
 	<script type="text/javascript" src="./fancybox/jquery.fancybox-1.3.4.js"></script>
 	<link rel="stylesheet" type="text/css" href="./fancybox/jquery.fancybox-1.3.4.css" media="screen" />
-
+	
 	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 
@@ -29,37 +34,53 @@
 	<script type="text/javascript" src="software-center.js"></script>
 	<script type="text/javascript" src="loadapps.js"></script>
 	<script type="text/javascript" src="installations.js"></script>
+	<script type="text/javascript" src="hotpicks.js"></script>
 	<script type="text/javascript" src="phpbb-authentication.js"></script>
+	<script type="text/javascript" src="lnvsync.js"></script>
+
+	<script type="text/javascript" src="detect-mobile.js"></script>
+	<script type="text/javascript" src="responsive-ui.js"></script>
 
 </head>
 
 <body>
-	<div id="back-button" onclick="SwitchToMainView();"><img src="graphics/icons/back.png" height=48 width=48></img></div>
+	<img id="back-button" onclick="SwitchToMainView();" src="graphics/icons/back.png" alt="">
 	<div id="topright-buttons">
-		<a id="login-link" class="fancyboxed" href="#login-box">
-			<button id="login-button" class="hide-on-login">Log-in</button>
-		</a>
-		<button id="profile-button" class="show-on-login fancyboxed" href="#profile-box">My profile</button>
+		<a id="login-link" class="fancyboxed hide-on-login button" href="#login-box">Log-in</a>
+		<a id="profile-button" class="show-on-login fancyboxed button" href="#profile-box">My profile</a>
 	</div>
-	<div id="top-bar">
-		<div class="bar-button show-on-login" id="installations-button">Installations (<span class="InstallationsCount"></span>)</div>
-
-		<div class="filter-button bar-button show-on-login" id="installed-button">Installed (<span class="count"></span>)</div>
-		<div class="filter-button bar-button show-on-login" id="upgrades-button">Upgrades (<span class="count"></span>)</div>
+	<div id="top-bar">		
+		<img id="linvo-logo" src="graphics/logo.png" alt="">
 		
+		<div class="bar-button show-on-login" id="installations-button">
+			<img src="graphics/icons/PC.png" alt="">
+			<span>Installations (<span class="InstallationsCount"></span>)</span>
+		</div>
+
 		<div id="search-bar">
-			<input class="defaultText" id="search-bar-input" title="Search here" type="text"></input>
-			<div id="magnify"></div>
-			<div id="search-bar-reset"></div>
+			<img id="search-icon" src="graphics/search.png" alt="">
+			<input class="defaultText" id="search-bar-input" title="Search here" type="text">
+			<img id="search-bar-reset" src="graphics/cancel.png" alt="">
+		</div>
+		
+		<div class="filter-button bar-button show-on-login" id="upgrades-button">
+			<img src="graphics/icons/upgrade.png" alt="">
+			<span>Upgrades (<span class="count"></span>)</span>
+			
+			<a id="upgrade-all" class="button">Upgrade all</a>
+		</div>		
+		<div class="filter-button bar-button show-on-login" id="installed-button">
+			<img src="graphics/icons/apps.png" alt="">
+			<span>Installed (<span class="count"></span>)</span>
 		</div>
 	</div>
 	
 	<div id="installations-box" class="hide-on-logout">
 		<div id="Installations"></div>
-		<button id="manage-installations-button" href="#profile-box" class="fancyboxed">
+		<a id="manage-installations-button" href="#profile-box" class="fancyboxed button">
 			<span>Manage installations</span>
 			<span id="view-all">View all/Manage</span>
-		</button>
+		</a>
 	</div>
 	
 	<div id="search-results">
@@ -68,11 +89,19 @@
 		<div id="one-result">1 app found.</div>
 		<div id="no-results">No apps found.</div>
 	</div>
-				
-	<div id="categories">
-	</div>
 
-	<div id="applications" class="empty-on-login">
+	<div id="home-page">
+		<div id="hot-picks-title"><h1>Hot picks:</h1></div>
+		<div id="hot-picks-carousel">
+		</div>
+		<div id="hotapp-show">
+			<span id="hotapp-name"></span><span id="hotapp-desc"></span>
+		</div>
+		<div id="categories">
+		</div>
+	</div>
+	
+	<div id="applications">
 		<div class="applications-list searched-apps">
 		</div>
 	</div>
@@ -84,22 +113,23 @@
 				<div style="-moz-transform: rotate(90deg); -o-transform: rotate(90deg); -webkit-transform: rotate(90deg); transform: rotate(90deg);"><h1 style="font-size:450%">:&lt;</h1></div>
 				<br/><h2>Sad server is... sad</h2>
 				<br/><br/>
-				<p align="justify" style="margin-left: 5%; margin-right:5%;">The server encountered an error.
+				<p style="margin-left: 5%; margin-right:5%;">The server encountered an error.
 				Check your internet connection.<br>If it works, please come back later or report this to ivo@linvo.org if it keeps going on.</p>
 			</div>
 		</div>
 	
 		<div id="login-box">
 			<div id="login-form">
-				<h2 id="login-text">Login</h2>
+				<h2 id="login-text">Log in</h2>
 				<form>
 					<label for="username">Username:</label>
-					<input type="text" name="username" id="username" value=""/>
+					<input type="text" name="username" id="lnvusername" value=""/>
 
 					<label for="password">Password:</label>
-					<input type="password" id="password" name="password"  /><br/>
-					<a href="../ucp.php?mode=sendpassword">I forgot my password</a><br/>
-		 
+					<input type="password" id="lnvusername" name="password"  /><br/>
+					<a href="http://linvo.org/ucp.php?mode=sendpassword">I forgot my password</a><br/>
+					<a href="http://linvo.org/ucp.php?mode=register">Register</a><br/>
+
 					<label for="autologin"><input type="checkbox" name="autologin" id="autologin">Log me on automatically each visit</label><br/>
 					<label for="viewonline"><input type="checkbox" name="viewonline" id="viewonline">Hide my online status this session</label>
 				</form>
@@ -128,24 +158,27 @@
 		<!-- Templates: those are used to bind data from the server to them -->
 		<div id="templates">
 			<div class="category">
-				<img class="Icon">
-				<h4 class="FriendlyName"></h4>
+				<img class="Icon" alt="">
+				<span class="FriendlyName"></span>
 				<span class="ItemCount">0</span> items.
 				<span class="Name"></span>
 			</div>
 			
+			
 			<div class="application">
-				<img class="Icon">
+				<!-- all those img tags (.Icon) have no src=, which is in violation of the HTML5 standards ; however, putting a src=, even with an nonexisting url, will slow the page load before the src 
+				gets overwritten by the simpleweld -->
+				<img class="Icon" alt="">
 				<span class="app-actions">
-					<a class="ActionDownload Action"><img src="graphics/icons/download.png"></img></a>
-					<a class="ActionAdd Action"><img src="graphics/icons/add.png"></img></a>
-					<a class="ActionRemove Action"><img src="graphics/icons/remove.png"></img></a>
-					<a class="ActionUpgrade Action"><img src="graphics/icons/upgrade.png"></img></a>
+					<a class="ActionDownload Action"><img src="graphics/icons/download.png" alt=""></a>
+					<a class="ActionAdd Action"><img src="graphics/icons/add.png" alt=""></a>
+					<a class="ActionRemove Action"><img src="graphics/icons/remove.png" alt=""></a>
+					<a class="ActionUpgrade Action"><img src="graphics/icons/upgrade.png" alt=""></a>
 				</span>
-				<span class="TitleBlock">
+				<div class="TitleBlock">
 						<h1 class="Name"></h1> 
 						<h3 class="Version"></h3>
-				</span>
+				</div>
 				<p class="Description"></p>
 				<span class='tripledots'>...</span>
 
@@ -154,16 +187,19 @@
 			
 			<div class="installation-full">
 				<span class="select-installation">Manage this installation</span>
-				<img class="Icon">
-				<p class="Description"></p>
-				<div><b>Linvo Release: </b><span class="OSRelease"></span></div>
-				<div><b>Installed apps: </b><span class="InstalledApps"></span></div>
-				<div><b>Installation type: </b><span class="Type"></span></div>
-				<div><b>Available upgrades: </b><span class="UpgradesCount"></span></div>
+				<img class="Icon" alt="">
+				
+				<div class="Properties">
+					<p class="Description"></p>
+					<div><b>Linvo Release: </b><span class="OSRelease"></span></div>
+					<div><b>Installed apps: </b><span class="InstalledApps"></span></div>
+					<div><b>Installation type: </b><span class="Type"></span></div>
+					<div><b>Available upgrades: </b><span class="UpgradesCount"></span></div>
+				</div>
 			</div>
 			
 			<div class="installation">
-				<img class="Icon">
+				<img class="Icon" alt="">
 				<p class="Description"></p>
 				<span class="Type"></span>
 			</div>

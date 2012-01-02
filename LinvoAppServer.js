@@ -12,7 +12,13 @@
  * 
  * Make a version that emulates the actions that require authentication of the Linvo server (add/remove/etc.) using local data (using the HTML5 API)
  * 
+ * A nice feature would also be a universal callbacks system - e.g. to always execute a function after .Add and .Remove; might be useful for syncing
+ * 
  */
+ 
+ 
+var serverMethods = ["List", "Add", "Remove", "Download", "Auth", "ListInstallations", "UserInfo", "RegisterInstallation", "Stats", "Categories"];
+
 
 var pendingReq = 0;
 var pendingReqObjects = [];
@@ -72,12 +78,12 @@ function LinvoAppServerData(data)
 	return data;
 }
 
-$.each(["List", "Add", "Remove", "Download", "Auth", "ListInstallations", "UserInfo", "RegisterInstallation", "Stats", "Categories"], 
+$.each(serverMethods, 
 	function(index, method_name)
 	{
 		LinvoAppServer.prototype[method_name] = function(dictionary, callback_func)
 		{
-			$.extend(dictionary, this.baseParameters);
+			dictionary = $.extend({}, this.baseParameters, dictionary);
 			
 			var request = { request_url: method_name+"/"+toServerQuery(dictionary), callback: callback_func };
 			return $.extend({}, this, {reqChain: this.reqChain.concat([request])});

@@ -33,12 +33,18 @@ function LoadInstallations()
 /* Set up the click handler ; this one must be dynamic since we might support loading more installations (than 50) in the future */
 $(".installation, .select-installation").live("click", function() 
 {
-	$(".installation").removeClass("selected");
-	$(this).addClass("selected"); 
+	var in_small_box = ($(this).parent().attr("id") == "Installations");
+	var elem = in_small_box ? $(this) : $(this).closest(".installation-full");
+	
+	$(".installation, .installation-full").removeClass("selected");
+
+	elem /* Except this element, we also have to put this class to it's "twin" in the InstallationsFull/Installations box  */
+		.add($(in_small_box ? "#InstallationsFull" : "#Installations").children()[elem.index()])
+		.addClass("selected"); 
 
 	/* Set the installation as a baseParameter of the server and put that value in a cookie */
-	$.cookie("linvo_installation", (linvoapp_server.baseParameters.Installation = $(this).data("installation-id")));
-	RefreshCentre({skipUserReload: true});
+	$.cookie("linvo_installation", (linvoapp_server.baseParameters.Installation = elem.data("installation-id")));
+	RefreshCentre({skipUserReload: true, skipCloseFancybox: true});
 });
 	
 /* And the box button */

@@ -1,136 +1,85 @@
-
-html 
+html
 {
-		height: 100%;
+	background-image: url(graphics/page-background.png);
+	background-repeat: repeat-x;
+	background-color: #f1f5f1;
+	background-attachment:fixed;
 }
-body 
+
+body, #top-bar
 {
-		margin-left: 20px;
-		margin-right: 20px;
-		/* width:expression( documentElement.clientWidth < 650 ? (documentElement.clientWidth == 0 ? (body.clientWidth < 650 ? "650" : "auto") : "650px") : "auto" ); */
-		# min-width: 650px;
-		margin-top: 10px;
-		padding: 0px;
-		
-		background-image: url(graphics/page-background.png);
-		background-repeat: repeat-x;
-		background-color: #f1f5f1;
-		background-attachment:fixed;
-
-		font: 12px/18px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif !important;
-		overflow: auto;
-
+	width: 75%;
+	margin-left: auto;
+	margin-right: auto;
+	
+	min-width: 250px;
+	
+	font: 12px/18px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif !important;
 }
 
 #top-bar
 {
-		top: 0px;
 		position: fixed;
-		margin-left: 10%;
-		margin-right: 10%;
-		width: 80%;
+		
+		top: 0px;
+		
+		height: 30px;
+		
+		/* We anchor that 14 px out of the window at each side, so that when the layout is resized to fit 300px (reduce-margins.js) the side that is padded will go outside */
+		right: -14px;
+		left: -14px;
+		
+		/* However, 2 px of the padding will always remain */
+		padding-right: 16px;
+		padding-left: 16px;
+		
+		z-index: 999;
+
 		background-image: url(graphics/bar-background.png);
 		border-bottom-right-radius: 20px;
 		border-bottom-left-radius: 20px;
-		background-size: 100% 230%; 
-
-		height: 30px;
-
-		z-index: 999;
-		
+		background-size: 100% 250%;
 		box-shadow: 0px 0px 16px black; 
-		vertical-align: middle;
+		
+		white-space: nowrap;
+		overflow: hidden;
 		
 		user-select: none;
 }
 
+#linvo-logo
+{
+		height: 90%;
+		
+		padding-right: 3px;
+
+		float: left;
+}
+
+#top-bar div
+{
+	display: inline-block;
+}
 
 #topright-buttons
 {
 	position: fixed;
 	right: 10px;
-	top: 0px;
+	top: 5px;
 }
 
 #categories
 {
-		z-index: 0;
-
-		position: absolute;
-		left: 10%;
-		margin-right: 10%;
-		width: 80%;
-		top: 16%;
-
-		user-select: none;
+	z-index: 0;
+	user-select: none;
 }
 
-#other-apps
-{
-		clear:both;
-		position: relative;
-}
 
 #applications 
 {
 		z-index: 0;
-		
-		top: 30px;
-		position: absolute;
 		padding-top: 120px;
-		width: 75%;
-		margin-right: 15.5%;
-		margin-left: 15.5%;
 }
-
-
-.application, .installation-full
-{
-		width: 450px;
-		height: 150px;
-
-		padding: 10px;
-		margin: 20px;
-		
-		display: inline-block;
-		
-		margin-bottom: 40px;
-		background-image: url(graphics/bar-background.png);
-		background-repeat: repeat-x;
-
-		margin-bottom: 20px;
-		overflow: hidden;
-		
-		box-shadow: 0px 0px 17px grey;
-		/*border-radius: 3px;*/
-		position: relative;
-		
-		cursor: pointer;
-}
-
-.application > .Description
-{
-	height: 55px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.application > .Icon
-{
-	width: 28%;
-
-}
-
-/* Stupid absolute positioning ; needed to workaround a bug in Chrome */
-.application > *, .installation-full > * { position: absolute; }
-.application > .app-actions { top: 10px; right: 5px;}
-.application > .TitleBlock { left: 31%; top: 15px; right: 80px; }
-.application > .TitleBlock > h1, .application > .TitleBlock > h3 {margin: 0px; display: inline;}
-.application > .Version {margin-left: 6px;}
-.application > img, .application > object { top: 12px; left: 12px; }
-.application > .Description { left: 31%; top: 39px; right: 10px; }
-.application > .tripledots { left: 31%; top: 100px; }
-
 
 .applications-list
 {
@@ -142,10 +91,14 @@ body
 {
 		color: #000000;
 		text-decoration: none;
-		cursor: pointer;
+
 		text-align: center;
 		display: inline-block;
-		margin: 20px;
+		
+		margin: 1.4%;
+		width: 8%;
+		min-width: 70px;
+		max-width: 90px;
 }
 
 .category:hover
@@ -153,119 +106,114 @@ body
 		text-shadow: black 0px 0px 1px;	
 }
 
-.category > img
+.category > .Icon
 {
-		 width: 48px;
-		 height: 48px;
-		 float:left;
-		 margin: 20px;
+		width: 58%;
+		max-width: 50px;
+		
+		float: left;
+		margin: 20px;
+}
+
+.category > .FriendlyName
+{
+		font-weight: bold;
+		display: block;
 }
 
 .category > .Name {display:none;}
+
+/* The borders are a little bit strange. we always put just right border; we later remove the border of the rightmost element in the bar */
+.bar-button, #linvo-logo
+{
+		border-image: url(graphics/line.png) 0 1 0 0 stretch stretch;
+		border-width: 1px;
+		border-top-width: 0px;
+}
 
 .bar-button
 {		
 		background-image: url(graphics/bar-background.png);
 		background-size: 100% 230%; 
 		
-		border-left:  1px solid black;
-		border-right:  1px solid black;
 		height: 100%;
 		
 		padding-left: 10px;
 		padding-right: 10px;
+		padding-top: 2px;
 		
-		font: 19px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
-		cursor: hand !important;
+		font: 18px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
 
 		display: none; /* we want those hidden by default */
 }
 
-.bar-button.clicked { background-size: 100% -230%; }
+#upgrades-button { border-width: 0px; }
+#upgrades-button, #installed-button { float: right; }
+#installations-button { float: left; }
 
-.filter-button, .Action
+.bar-button > img { height: 16px; } /* The icon of the button */
+.bar-button.clicked { background-size: 100% -230%; } /* when clicked, just invert the background */
+
+.bar-button.overflown > *:not(img)
 {
-		cursor: pointer;
+	display: none;
 }
 
-.inactive
-{
-		opacity: 0.4;
-		cursor: default;
-}
-
-#installed-button
-{
-		/* 50 px from right */
-		float: right;
-		margin-right: 50px;
-}
-
-#upgrades-button
-{
-		/* 50 px from right */
-		float: right;
-}
-
-#installations-button
-{
-		border-left: 0px;
-		float: left;
-		margin-left: 20px;
-		padding-right: 20px;
-}
-
-#search-bar
-{
-		float: left;
-		margin-left: 20px;
-		padding-top: 2px;
+.bar-button.overflown
+{ 	
+	border: none; 
+	padding-right: 2px;
+	padding-left: 2px;
 }
 
 #search-results
 {
-		position: fixed; 
-		top:40px; 
 		z-index: 9999; 
 		text-align: center; 
 		width: 100%; 
 		margin-left: auto; 
 		margin-right: auto;
+		margin-top: 50px;
 }
 
-input
+#search-bar
 {
-		border-radius:12px;
-		box-sizing:border-box;
+	margin-top: 2px;
+	float: left;
+	width: 30%;
+	min-width: 35px;
+	max-width: 180px;
+	
+	margin-left: 6px;
+	
+	display: inline-block;
+	position: relative;
 }
 
-#search-bar-reset 
-{ 
-		position: fixed; 
-		top:9px; 
-		margin-left: 190px;
-		width:11px; 
-		height:11px; 
-		display: none;
-		background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAlUlEQVR42o2RSQrDMAxFc5KCD5MTBgw5ioejeFMoybYhyaLdqPpFKp9AaAwPeXgSQu5E5EvO%2BaZE5a6IxRH37rjYKyukI6WUDe%2FwvOKTBSalhIQFHuTBH7Baa9gj4siJA%2BSHwgJHbmeC%2FKLso8i8%2F1ZGz1w5Xuw5Qg42Hjmj1rrD%2B835LEHvd58z%2F2CwH5tNnO0c3PkAGud706ytt0YAAAAASUVORK5CYII%3D'); 
+#search-icon, #search-bar-reset
+{
+	height: 13px;
+	position: absolute;
+	top: 5px;
 }
+#search-icon { left: 6px; }
+#search-bar-reset { right: 6px; top: 7px; display: none; height: 10px; cursor:  }
 
-#magnify 
-{ 
-		position: absolute; 
-		top: 8px; 
-		margin-left: 4px; 
-		width:15px; 
-		height:14px; 
-		background-image:url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGJhc2VQcm9maWxlPSJmdWxsIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWxuczpldj0iaHR0cDovL3d3dy53My5vcmcvMjAwMS94bWwtZXZlbnRzIj4KPGc%2BCgk8cG9seWdvbiBmaWxsPSIjNjY2IiBwb2ludHM9IjkuMjA3LDYuMTI2IDcuNzkzLDcuNTQxIDExLjc5MywxMS41NDEgMTMuMjA3LDEwLjEyNiIgLz4KCTxwYXRoIGZpbGw9IiM2NjYiIGQ9Ik01LjkxNywyYzEuNjA4LDAsMi45MTcsMS4zMDgsMi45MTcsMi45MTdTNy41MjUsNy44MzMsNS45MTcsNy44MzNTMyw2LjUyNSwzLDQuOTE3UzQuMzA4LDIsNS45MTcsMgoJCSBNNS45MTcsMEMzLjIwMSwwLDEsMi4yMDEsMSw0LjkxN3MyLjIwMSw0LjkxNyw0LjkxNyw0LjkxN3M0LjkxNy0yLjIwMSw0LjkxNy00LjkxN0MxMC44MzMsMi4yMDEsOC42MzIsMCw1LjkxNywwTDUuOTE3LDB6IiAvPgo8L2c%2BCjwvc3ZnPgo%3D'); 
+#search-bar-input
+{
+	width: 100%;
+	
+	padding-left: 20px;
 }
-
-
 
 #back-button
 {
 		position: fixed;
-		top: 10px;
+		top: 35px;
+		left: 10px;
+		max-width: 48px;
+		width: 10%;
+				
 		display: none;
 }
 
@@ -290,16 +238,25 @@ input
 		display: inline-block;
 }
 
+#upgrade-all
+{
+		position: fixed;
+		top: 45px;
+		font-size: 17px;
+
+		display: none;
+}
+
+#upgrades-button.clicked > #upgrade-all
+{
+		display: block;
+}
+
+
 #error-text
 {
 		font-size: 80%;
 		color: red;
-}
-
-.defaultText 
-{ 
-		width: 210px;
-		padding-left: 20px;
 }
 
 .defaultTextActive 
@@ -308,20 +265,11 @@ input
 		font-style: italic; 
 }
 
-.InstalledVersionInfo
+.inactive
 {
-		position: absolute;
-		text-align: right;
-		width: 95%;
-		bottom: 0;
+		opacity: 0.4;
+		cursor: default;
 }
-
-
-.InstallationsCount { display: inline-block; }
-
-/* Universal classes used in .installation, .installation-full and .application */
-.Description { text-align: justify; }
-.tripledots {font-weight: bold; display: none;}
 
 /* Define the size of some UI elements */
 #login-box
@@ -344,4 +292,16 @@ input
 #profile-box > button
 {
 	float: right;
+}
+
+input 
+{
+	border-radius:12px;
+	box-sizing:border-box;
+}
+
+/* Define clickable GUI items ; this is to be added in the configuration some time (enable/disable) */
+.filter-button, .Action, #back-button, #search-bar-reset, #installations-button, .category, .application
+{
+		cursor: pointer;
 }

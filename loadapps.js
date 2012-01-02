@@ -15,7 +15,7 @@ function LoadAppsCallback(app_list)
 	{		
 		var collection = $();
 		linvoapp_server.each(data.Application, function(index,app) { collection = collection.add(GetAppElement(app)); });
-		collection.appendTo(app_list).each(TruncateAppDesc);
+		collection.appendTo(app_list.css("opacity",0).fadeTo("slow",1)).each(TruncateAppDesc);
 	};
 }
 
@@ -118,7 +118,12 @@ function LoadAppsByCategory(category)
 	if (LoadAppsByCategory.page == 0) /* Update the filter buttons if we're loading the first page */
 		UpdateFilters();
 	
-	/* if this DIV already exists, just show it */
+	/* Check if the last loaded page of this category is empty */
+	var pages =  $(".applications-list[id|="+category+"]");
+	if (pages.length && !pages.last().children().length)
+		return;
+		
+	/* If this DIV already exists, just show it */
 	var div_id = category+"-"+LoadAppsByCategory.page;
 	var app_list = document.getElementById(div_id);
 	if (app_list)

@@ -1,7 +1,6 @@
 #installations-box
 {
 		position: fixed;
-		margin-left: 10%;
 		top: 0px;
 		padding-top: 30px;
 		
@@ -10,7 +9,7 @@
 		
 		display: none;
 		
-		z-index: 1;
+		z-index: 200;
 				
 		background-image: url(graphics/bar-background.png);
 		background-repeat: repeat-x;
@@ -74,18 +73,38 @@
 .installation-full
 {
 		margin-left: 20px;
-		width: 500px;
+		max-width: 500px;
+		width: 100%;
+		
+		height: 150px;
+		margin-bottom: 20px;
+
 }
 
-.installation-full > img
+.installation-full > * { position: absolute; }
+
+.installation-full > .Icon
 {
-	vertical-align: top;
-	float: left;
-	margin: 20px;
+	width: 20%;
+	
+	top: 33px;
+	left: 12px;
 }
 
-.select-installation
+.installation-full > .Properties
 {
-		text-decoration: underline;
-		cursor: pointer;
+	top: 20px;
+	left: 20%;
+	padding-left: 17px;
 }
+
+.installation-full > .select-installation
+{
+	top: 5px;
+	left: 15px;
+	
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.installation-full.selected > .select-installation {display: none;}

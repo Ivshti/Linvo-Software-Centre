@@ -28,7 +28,7 @@ function LogIn()
 				$.cookie("AuthKey",AuthKey);
 				linvoapp_server.baseParameters.AuthKey = AuthKey;
 				
-				setTimeout(RefreshCentre,1000);
+				RefreshCentre();
 			}	
 		}
 	});
