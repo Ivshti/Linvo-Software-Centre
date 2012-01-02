@@ -1,0 +1,22 @@
+/* Configure when is each action visible */
+.Action, .InstalledVersionInfo
+{
+	display: none;
+}
+
+.ActionAdd, .ActionDownload
+{
+	display: inline-block;
+}
+
+.Installed .ActionRemove { display: inline-block; }
+.Installed .ActionAdd { display: none; }
+.Upgradable .ActionUpgrade { display: inline-block; }
+.Upgradable .InstalledVersionInfo { display: block; }
+
+/* And the icon size of the actions */
+.Action img 
+{
+	width: 25px;
+	height: 20px;
+}

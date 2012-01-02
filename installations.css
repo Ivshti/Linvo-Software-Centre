@@ -1,0 +1,91 @@
+#installations-box
+{
+		position: fixed;
+		margin-left: 10%;
+		top: 0px;
+		padding-top: 30px;
+		
+		width: 300px;
+		height: 400px;		
+		
+		display: none;
+		
+		z-index: 1;
+				
+		background-image: url(graphics/bar-background.png);
+		background-repeat: repeat-x;
+		
+		border-bottom-right-radius: 20px;
+		border-bottom-left-radius: 20px;
+		box-shadow: 0px 0px 16px black; 
+
+}
+
+/* The installations as displayed inside this box */
+.installation
+{
+		clear: both;
+		padding: 10px;
+		height: 70px;
+		vertical-align: middle;
+		cursor: pointer;
+}
+
+.installation > img
+{
+	float: left;
+	margin-right: 20px;
+	vertical-align: top;
+}
+
+.installation > .Type { display: none; }
+
+#Installations > .selected
+{
+		background-image: url(graphics/app-background.png);
+		background-size: 100% 100%; 
+}
+
+/* Clever CSS3 selectors to make only the selected + 3 other installations be displayed in the box */
+#Installations > * { display: none; }
+
+#Installations > *:nth-child(-n+3), 
+#Installations > .selected, 
+#Installations > .selected:nth-child(-n+3) ~ *:nth-child(4) 
+{
+    display: block !important;
+}
+
+#manage-installations-button
+{
+		position: absolute;
+		bottom: 3px;
+		left: 60px;
+		background-image: url(graphics/icons/manage.png);
+		background-size: 18px 18px;
+		background-repeat: no-repeat;
+		background-position: left center;
+		text-indent: 8px;
+}
+
+#manage-installations-button > *:not(:first-child) { display: none; }
+
+/* The installations as displayed on the "manage installations" page */
+.installation-full
+{
+		margin-left: 20px;
+		width: 500px;
+}
+
+.installation-full > img
+{
+	vertical-align: top;
+	float: left;
+	margin: 20px;
+}
+
+.select-installation
+{
+		text-decoration: underline;
+		cursor: pointer;
+}

@@ -1,0 +1,1 @@
+/home/linvo/Desktop/linvo-installer/js
